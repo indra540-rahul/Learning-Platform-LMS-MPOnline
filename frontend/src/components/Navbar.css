@@ -1,0 +1,158 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+/* Navbar Wrapper */
+.navbar {
+  width: 100%;
+  background: linear-gradient(120deg, #04d9ff 30%, #240099);
+  border-bottom: 1px solid #bababa;
+  padding: 16px 40px;
+  font-family: "Inter", sans-serif;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+/* Container */
+.navbar-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Logo */
+.logo {
+  font-size: 22px;
+  font-weight: 600;
+  color: #2b2b2c;
+}
+
+.logo-highlight {
+  color: #0856ff; /* blue */
+}
+
+/* Nav Links */
+.nav-links {
+  display: flex;
+  gap: 30px;
+  list-style: none;
+  margin-left: 40px;
+}
+
+.nav-links li {
+  font-size: 15px;
+  cursor: pointer;
+  position: relative;
+}
+
+.nav-links a {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+/* Active Link */
+.nav-links .active {
+  color: #313641;
+  font-weight: 700;
+}
+
+.nav-links .active::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: #2563eb;
+  border-radius: 2px;
+}
+
+/* Right Section */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* Search Box */
+.search-box {
+  display: flex;
+  align-items: center;
+  background: #f3f4f6;
+  border-radius: 25px;
+  padding: 9px 12px;
+  width: 250px;
+}
+
+.search-box input {
+  border: none;
+  outline: none;
+  background: transparent;
+  margin-left: 8px;
+  font-size: 14px;
+  width: 100%;
+}
+
+.search-icon {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* Button */
+.get-started-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 9px 18px;
+  border-radius: 25px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.get-started-btn:hover {
+  background: #013ee6;
+}
+
+.cart-btn {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  background: #ffffff;
+  color: #1f2937;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.cart-btn:hover {
+  background: #e5e7eb;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -4px;
+  right: -2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+}

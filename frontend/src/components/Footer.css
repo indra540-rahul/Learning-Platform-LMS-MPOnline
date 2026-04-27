@@ -1,0 +1,112 @@
+.footer {
+  background: linear-gradient(120deg, #04d9ff 30%, #240099);
+  padding: 50px 40px 20px;
+  font-family: "Poppins", sans-serif;
+  border-top: 1px solid #e5e7eb;
+  margin-top: 0;
+}
+
+/* Container */
+.footer-container {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1.5fr;
+  gap: 40px;
+  margin-bottom: 40px;
+}
+
+/* Brand */
+.footer-brand h2 {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.footer-brand span {
+  color: #2563eb;
+}
+
+.footer-brand p {
+  margin: 15px 0;
+  font-size: 14px;
+  color: rgb(32, 31, 31);
+  line-height: 1.6;
+}
+
+/* Social Icons */
+.social-icons {
+  display: flex;
+  gap: 10px;
+}
+
+.icon {
+  width: 35px;
+  height: 35px;
+  background: #e5e7eb;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Columns */
+.footer-column h4 {
+  font-size: 15px;
+  margin-bottom: 12px;
+  color: rgb(52, 49, 49);
+}
+
+.footer-column ul {
+  list-style: none;
+}
+
+.footer-column li {
+  font-size: 14px;
+  color: #ffffff;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+/* Newsletter */
+.newsletter p {
+  font-size: 14px;
+  color: #ffffff;
+  margin-bottom: 10px;
+}
+
+.newsletter-box {
+  display: flex;
+  background: #e5e7eb;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.newsletter-box input {
+  flex: 1;
+  border: none;
+  padding: 10px;
+  outline: none;
+  background: transparent;
+}
+
+.newsletter-box button {
+  background: #2563eb;
+  border: none;
+  color: white;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+/* Bottom */
+.footer-bottom {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 15px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.footer-links {
+  display: flex;
+  gap: 20px;
+}
