@@ -1,0 +1,50 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.python-version
+venv/
+.venv/
+env/
+
+# Node
+node_modules/
+dist/
+coverage/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Build / cache
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# Project-specific
+backend/uploads/
+uploads/
+backend/app/__pycache__/
+backend/app/routers/__pycache__/
