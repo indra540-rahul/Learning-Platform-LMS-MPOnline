@@ -212,3 +212,5 @@ This project is strong for a final year project because it includes:
 - Backend setup: [backend/README.md](/d:/Project_MPOnline/backend/README.md)
 - Backend API reference: [backend/API_DOCUMENTATION.md](/d:/Project_MPOnline/backend/API_DOCUMENTATION.md)
 - Frontend setup: [frontend/README.md](/d:/Project_MPOnline/frontend/README.md)
+
+VIDEO LINK: https://drive.google.com/file/d/1koY3vx7uPsOwEzRsdkWqSzSOqzoVRDg_/view?usp=drive_link
