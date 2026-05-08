@@ -53,10 +53,21 @@ body {
 
 /* Logo */
 .logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-size: 22px;
   font-weight: 600;
   color: #2b2b2c;
   font-family: cursive;
+}
+
+.logo-mark {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  flex-shrink: 0;
+  border-radius: 10px;
 }
 
 .logo-highlight {

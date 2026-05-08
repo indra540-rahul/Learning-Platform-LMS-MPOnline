@@ -5,6 +5,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useCourses } from "../hooks/useCourses";
 import { useAuth } from "../hooks/useAuth";
 import { api } from "../services/api";
+import luminaLogo from "../assets/lumina_lms_logo.png";
 
 
 const Navbar = () => {
@@ -118,7 +119,8 @@ const Navbar = () => {
     <nav className="navbar">
       <div className="navbar-container">
         <div className="logo">
-          <span className="logo-highlight">Lumina</span> LMS
+          <img src={luminaLogo} alt="Lumina LMS logo" className="logo-mark" />
+          <span><span className="logo-highlight">Lumina</span> LMS</span>
         </div>
 
         <button
