@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import "./Home.css";
+import heroImage from "../assets/hero.jpg";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -42,7 +43,7 @@ const Home = () => {
 
         <div className="hero-right">
           <img
-            src="./src/assets/hero.jpg"
+            src={heroImage}
             alt="AI learning workspace"
           />
         </div>
