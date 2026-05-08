@@ -11,6 +11,7 @@ class Settings:
   API_PREFIX = "/api"
   SECRET_KEY = os.getenv("SECRET_KEY", "change-this-secret-key-in-production")
   REFRESH_SECRET_KEY = os.getenv("REFRESH_SECRET_KEY", "change-this-refresh-secret-in-production")
+  ALLOW_DEMO_PASSWORDS = os.getenv("ALLOW_DEMO_PASSWORDS", "false").strip().lower() == "true"
   ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
   REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7"))
   ALGORITHM = "HS256"
@@ -27,13 +28,15 @@ class Settings:
   UPLOAD_DIR = os.getenv("UPLOAD_DIR", "uploads")
   GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
   GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET", "")
-  LINKEDIN_CLIENT_ID = os.getenv("LINKEDIN_CLIENT_ID", "")
-  LINKEDIN_CLIENT_SECRET = os.getenv("LINKEDIN_CLIENT_SECRET", "")
+  FACEBOOK_CLIENT_ID = os.getenv("FACEBOOK_CLIENT_ID", "")
+  FACEBOOK_CLIENT_SECRET = os.getenv("FACEBOOK_CLIENT_SECRET", "")
   SMTP_HOST = os.getenv("SMTP_HOST", "")
   SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
   SMTP_USER = os.getenv("SMTP_USER", "")
   SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
   SMTP_FROM = os.getenv("SMTP_FROM", "no-reply@lumina-lms.local")
+  RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "")
+  RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "")
 
   @property
   def access_delta(self):

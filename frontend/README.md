@@ -2,19 +2,17 @@
 
 ## Overview
 
-This frontend is built with React and Vite. It provides the public pages, authentication page, course browsing flow, and separate dashboards for student, mentor, and admin users.
+The frontend is built with React and Vite. It includes the public website, compact auth experience, course browsing, and role-based workspaces for `student`, `mentor`, and `admin`.
 
 ## Main Features
 
-- landing page and marketing pages
-- authentication UI
-- OAuth redirect handling
-- student dashboard
-- mentor dashboard
-- admin dashboard
-- course catalog and checkout flow
-- API integration through Axios
-- route protection based on role
+- public landing and marketing pages
+- compact auth page with login, signup, and OTP reset
+- role-aware protected routing
+- student dashboard with planner, task manager, mentor desk, reports, and courses
+- mentor dashboard with overview, students, calendar, analytics, notifications, reports, and settings
+- admin dashboard with users, mentors, planner/task board, reports, inquiries, analytics, notifications, and settings
+- centralized API communication through Axios
 
 ## Tech Stack
 
@@ -22,9 +20,9 @@ This frontend is built with React and Vite. It provides the public pages, authen
 - Vite
 - React Router DOM
 - Axios
-- Framer Motion
 - Recharts
 - Lucide React
+- Framer Motion
 
 ## Folder Structure
 
@@ -35,11 +33,11 @@ frontend/
 |   |-- assets/
 |   |-- components/
 |   |-- context/
-|   |-- data/
 |   |-- hooks/
 |   |-- layouts/
 |   |-- pages/
-|   |   `-- dashboard/
+|   |   |-- dashboard/
+|   |   `-- Auth.*
 |   |-- routes/
 |   |-- services/
 |   |-- App.jsx
@@ -64,13 +62,13 @@ http://localhost:5173
 
 ## Environment Variable
 
-Create `frontend/.env` if you want to override the API URL:
+Optional frontend env:
 
 ```env
 VITE_API_URL=http://localhost:8000/api
 ```
 
-If not provided, the frontend uses:
+Default fallback:
 
 ```text
 http://localhost:8000/api
@@ -80,53 +78,55 @@ http://localhost:8000/api
 
 ### Public Routes
 
-- `/` - Home page
-- `/about` - About page
-- `/contact` - Contact page
-- `/courses` - Course catalog
-- `/checkout` - Checkout page
-- `/auth` - Login, signup, OTP reset, and OAuth redirect landing
+- `/` - home
+- `/about` - about page
+- `/contact` - contact page
+- `/courses` - course catalog
+- `/checkout` - cart / checkout flow
+- `/auth` - sign in, sign up, OTP reset, and OAuth callback handling
 
 ### Protected Routes
 
-- `/admin/*` - Admin dashboard
-- `/mentor/*` - Mentor dashboard
-- `/user/*` - Student dashboard
+- `/admin/*` - admin dashboard
+- `/mentor/*` - mentor dashboard
+- `/user/*` - student dashboard
 
 ## Role-Based Dashboards
 
 ### Student
 
-- overview dashboard
+- overview
 - study planner
 - task manager
+- mentor desk
 - my courses
-- reports/resources
+- reports
 - analytics
 - notifications
-- settings
+- account settings
 
 ### Mentor
 
-- overview
-- students
-- calendar
-- analytics
-- notifications/help
-- tasks
+- overview summary
+- my students
+- calendar / agenda
+- analytics for assigned students
+- notifications
+- task board support through student actions
 - reports review
-- settings
+- profile settings
 
 ### Admin
 
 - overview
 - users
-- tasks/planner
-- reports
-- analytics
+- mentors and staff directory
+- task board / planner
+- reports studio
+- progress analytics
 - notifications
-- settings
-- security section
+- inquiries
+- account settings
 
 ## API Integration
 
@@ -134,27 +134,30 @@ All API calls are centralized in:
 
 [src/services/api.js](/d:/Project_MPOnline/frontend/src/services/api.js)
 
-This service handles:
+This layer handles:
 
-- backend base URL
-- attaching JWT access token
-- request helpers for auth, users, tasks, reports, analytics, notifications, and dashboards
-- unified error handling
+- base URL configuration
+- bearer token attachment
+- auth methods
+- task / report / planner / mentor / inquiry requests
+- analytics and dashboard data loading
+- consistent error propagation
 
 ## Authentication Handling
 
-- user data is stored in local storage as `lumina_user`
+- current user is stored as `lumina_user`
 - access token is stored as `lms_access_token`
 - refresh token is stored as `lms_refresh_token`
-- `ProtectedRoute` prevents unauthorized role access
-- OAuth callback tokens are read from the `/auth` page query string
+- `ProtectedRoute` enforces role access
+- OAuth callback data is read on `/auth`
 
 ## Important Components
 
-- `routes/AppRoutes.jsx` defines public and protected routes
-- `routes/ProtectedRoute.jsx` guards dashboard routes
-- `context/AuthContext.jsx` manages auth state
-- `services/api.js` manages backend communication
+- `routes/AppRoutes.jsx`
+- `routes/ProtectedRoute.jsx`
+- `context/AuthContext.jsx`
+- `services/api.js`
+- `pages/dashboard/components/DashboardFeatures.jsx`
 
 ## Build For Production
 
@@ -162,7 +165,7 @@ This service handles:
 npm run build
 ```
 
-Preview the production build:
+Preview the build:
 
 ```powershell
 npm run preview
@@ -170,11 +173,11 @@ npm run preview
 
 ## Final Year Project Value
 
-This frontend is strong for a final year project because it demonstrates:
+This frontend demonstrates:
 
-- component-based UI development
-- route-based application architecture
-- protected navigation
-- API integration with backend
-- role-specific interface design
-- dashboard-style data presentation
+- route-based SPA architecture
+- role-specific dashboard UX
+- reusable component patterns
+- secure protected navigation
+- live backend integration
+- analytics-oriented UI design

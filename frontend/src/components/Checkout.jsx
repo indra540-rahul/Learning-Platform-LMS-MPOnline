@@ -19,11 +19,34 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useCourses } from "../hooks/useCourses";
+import { api } from "../services/api";
+
+const loadRazorpayScript = () => new Promise((resolve, reject) => {
+  if (window.Razorpay) {
+    resolve(window.Razorpay);
+    return;
+  }
+
+  const existing = document.querySelector('script[data-razorpay-checkout="true"]');
+  if (existing) {
+    existing.addEventListener("load", () => resolve(window.Razorpay), { once: true });
+    existing.addEventListener("error", () => reject(new Error("Unable to load Razorpay checkout")), { once: true });
+    return;
+  }
+
+  const script = document.createElement("script");
+  script.src = "https://checkout.razorpay.com/v1/checkout.js";
+  script.async = true;
+  script.dataset.razorpayCheckout = "true";
+  script.onload = () => resolve(window.Razorpay);
+  script.onerror = () => reject(new Error("Unable to load Razorpay checkout"));
+  document.body.appendChild(script);
+});
 
 const Checkout = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { cartCourses, removeFromCart, subtotal, completePurchase } = useCourses();
+  const { cartIds, cartCourses, removeFromCart, subtotal, clearCart, refreshEnrollments } = useCourses();
   const [promo, setPromo] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -46,11 +69,56 @@ const Checkout = () => {
       return;
     }
 
+    if (user.role !== "student") {
+      setError("Course purchase is available for student accounts only.");
+      return;
+    }
+
     try {
       setIsPaying(true);
-      completePurchase();
-      setMessage("Payment successful. Your courses are now available in the student dashboard.");
-      setTimeout(() => navigate("/user/my-courses"), 700);
+      const Razorpay = await loadRazorpayScript();
+      const order = await api.createRazorpayOrder({
+        course_ids: cartIds,
+        promo_code: promo.trim() || undefined,
+      });
+
+      await new Promise((resolve, reject) => {
+        const razorpay = new Razorpay({
+          key: order.key_id,
+          amount: order.amount,
+          currency: order.currency,
+          name: order.name,
+          description: order.description,
+          order_id: order.order_id,
+          prefill: {
+            name: order.prefill_name,
+            email: order.prefill_email,
+          },
+          theme: {
+            color: "#2563eb",
+          },
+          handler: async (response) => {
+            try {
+              const verification = await api.verifyRazorpayPayment(response);
+              await refreshEnrollments();
+              clearCart();
+              setMessage(verification.message);
+              setTimeout(() => navigate("/user/my-courses"), 900);
+              resolve(verification);
+            } catch (verifyError) {
+              reject(verifyError);
+            }
+          },
+          modal: {
+            ondismiss: () => reject(new Error("Payment was cancelled before completion.")),
+          },
+        });
+
+        razorpay.on("payment.failed", (response) => {
+          reject(new Error(response.error?.description || "Payment failed. Please try again."));
+        });
+        razorpay.open();
+      });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -147,8 +215,8 @@ const Checkout = () => {
           </div>
 
           <div className="security">
-            <span><ShieldCheck size={16} /> Secure simulated payment flow</span>
-            <span><Sparkles size={16} /> Enrollment appears instantly after payment</span>
+            <span><ShieldCheck size={16} /> Razorpay test checkout</span>
+            <span><Sparkles size={16} /> Enrollment appears instantly after verified payment</span>
           </div>
 
           <div className="checkout-benefits">
@@ -230,7 +298,7 @@ const Checkout = () => {
 
             <div className="payment-icons">
               <div><CreditCard size={18} />Cards</div>
-              <div><Landmark size={18} />Net Banking</div>
+              <div><Landmark size={18} />NetBanking</div>
               <div><QrCode size={18} />UPI</div>
               <div><Wallet size={18} />Wallets</div>
             </div>

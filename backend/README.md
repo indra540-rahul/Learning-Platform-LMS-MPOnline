@@ -2,21 +2,21 @@
 
 ## Overview
 
-This backend is built with FastAPI and follows a modular structure that is fully acceptable for a final year project. Splitting logic into files such as `models.py`, `schemas.py`, `database.py`, `security.py`, and router modules is a good software engineering practice because it improves readability, testing, and maintenance.
+The backend is built with FastAPI and uses a modular router-based structure. It powers authentication, role-based dashboards, tasks, planner logic, mentor assignment, reports, scoped notifications, contact inquiries, and course enrollment records.
 
 ## Backend Responsibilities
 
 - authentication and authorization
-- user management
-- task management
-- report submission and feedback
-- notifications
-- analytics
-- role-based dashboard data
-- password reset with OTP
-- OAuth integration
-- file upload handling
-- email sending
+- OTP reset and OAuth-ready login
+- user and role management
+- student mentor request and mentor assignment workflow
+- mentor feedback storage
+- task creation, progress sync, and notifications
+- report submission, upload, and mentor/admin feedback
+- role-scoped notifications
+- dashboard and analytics aggregation
+- contact inquiry storage and admin email reply
+- payment-order and course-enrollment persistence
 
 ## Tech Stack
 
@@ -38,8 +38,13 @@ backend/
 |   |-- routers/
 |   |   |-- analytics.py
 |   |   |-- auth.py
+|   |   |-- contact.py
+|   |   |-- courses.py
 |   |   |-- dashboard.py
+|   |   |-- mentors.py
 |   |   |-- notifications.py
+|   |   |-- payments.py
+|   |   |-- planner.py
 |   |   |-- reports.py
 |   |   |-- tasks.py
 |   |   `-- users.py
@@ -53,25 +58,20 @@ backend/
 |   |-- security.py
 |   `-- seed.py
 |-- .env.example
-|-- README.md
 |-- API_DOCUMENTATION.md
+|-- README.md
 `-- requirements.txt
 ```
 
 ## Why This Structure Is Good
 
-- `main.py` starts the FastAPI app and registers routers
-- `config.py` stores environment-based settings
-- `database.py` manages SQLAlchemy engine, session, and base
-- `models.py` defines database tables
-- `schemas.py` defines request and response models
-- `security.py` handles hashing and token creation
+- `main.py` boots FastAPI, applies startup table/column checks, and registers routers
+- `models.py` holds relational entities for auth, mentoring, tasks, reports, notifications, contact, and payments
+- `schemas.py` keeps request/response contracts explicit
 - `dependencies.py` centralizes auth and role checks
-- `routers/` keeps endpoint groups separated by feature
-- `seed.py` provides demo data for presentation/testing
-- `mailer.py` isolates email logic
-
-This separation makes the project easier to explain in report writing, SRS/design documentation, and viva.
+- `routers/` separate business areas cleanly for viva explanation and maintenance
+- `mailer.py` isolates SMTP reply logic
+- `seed.py` prepares demo accounts for project presentation
 
 ## Setup
 
@@ -86,8 +86,6 @@ CREATE DATABASE lms_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```powershell
 copy .env.example .env
 ```
-
-Then update values in `.env` if needed.
 
 ### 3. Install dependencies
 
@@ -124,8 +122,6 @@ http://localhost:8000/redoc
 
 ## Environment Variables
 
-Example variables used by the backend:
-
 ```env
 DATABASE_URL=mysql+pymysql://root:password@localhost:3306/lms_db
 SECRET_KEY=replace-with-a-long-random-secret
@@ -147,24 +143,16 @@ SMTP_PASSWORD=your-email-password
 SMTP_FROM=no-reply@lms.com
 ```
 
-## Authentication Flow
-
-- Registration returns access and refresh tokens
-- Login returns access and refresh tokens
-- Protected routes require `Authorization: Bearer <token>`
-- Roles used in the project are `admin`, `mentor`, and `student`
-
 ## Seeded Demo Users
 
-The backend seeds demo users on startup when the database is empty:
+The backend seeds demo data automatically on startup when needed:
 
 - `admin@example.com`
 - `mentor@example.com`
 - `student@example.com`
-- `ananya@example.com`
-- `rahul@example.com`
+- additional sample student accounts for testing
 
-For presentation convenience, the current security logic allows the three main demo emails to log in with any password.
+The three main seeded emails can currently log in with any password for demo convenience.
 
 ## Main Database Models
 
@@ -173,28 +161,58 @@ For presentation convenience, the current security logic allows the three main d
 - `Task`
 - `Report`
 - `Notification`
+- `MentorRequest`
+- `MentorFeedback`
 - `ActivityLog`
+- `ContactMessage`
+- `PaymentOrder`
+- `CourseEnrollment`
 
 ## Main API Modules
 
-- `auth.py` for auth, OTP reset, and OAuth
-- `users.py` for profile and user listing
-- `tasks.py` for task CRUD
-- `reports.py` for report submission, feedback, and upload
-- `notifications.py` for notifications
-- `analytics.py` for overview and performance
-- `dashboard.py` for role-specific dashboard data
+- `auth.py` for register, login, OTP reset, and OAuth
+- `users.py` for profile and user update operations
+- `tasks.py` for role-scoped task CRUD and progress updates
+- `reports.py` for report submission, review, and upload
+- `analytics.py` for overview and performance metrics
+- `dashboard.py` for admin, mentor, and student dashboard payloads
+- `notifications.py` for scoped inbox read/clear operations
+- `mentors.py` for mentor staff, requests, direct assignment, and feedback
+- `planner.py` for student planner summary and roadmap rebuild
+- `contact.py` for inquiry intake and admin reply
+- `payments.py` for payment-order and enrollment persistence
+- `courses.py` for backend course catalog data
+
+## Current Role Rules
+
+- `student`
+  - cannot create tasks
+  - can update only own assigned tasks
+  - can use planner endpoints
+  - can submit reports and mentor requests
+
+- `mentor`
+  - sees only currently assigned students
+  - can create tasks only for assigned students
+  - can review reports only for assigned students
+  - cannot use student planner endpoints
+
+- `admin`
+  - manages staff and students
+  - can assign and unassign mentors
+  - can filter progress analytics by student
+  - can review and reply to contact inquiries
 
 ## Notes For Final Year Submission
 
-This backend design is appropriate because it demonstrates:
+This backend is appropriate for academic evaluation because it demonstrates:
 
-- layered architecture
-- REST API design
-- role-based security
-- database modeling
-- third-party integration readiness
-- production-style project organization
+- layered API architecture
+- role-based access control
+- relational database modeling
+- email and OAuth integration readiness
+- planner logic integrated with operational task data
+- maintainable separation of concerns
 
 ## API Reference
 

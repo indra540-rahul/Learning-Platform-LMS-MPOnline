@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import "./Auth.css";
-import { Mail, Lock, Eye, EyeOff, User } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, User, BriefcaseBusiness, Compass, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { api, API_ROOT_URL } from "../services/api";
 
 const Auth = () => {
   const navigate = useNavigate();
-  const { login, register } = useAuth();
+  const { login, register, completeOAuthLogin } = useAuth();
 
   const [isLogin, setIsLogin] = useState(true);
   const [resetMode, setResetMode] = useState(false);
@@ -18,6 +18,13 @@ const Auth = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({ name: "", email: "", password: "" });
   const [resetData, setResetData] = useState({ email: "", otp: "", newPassword: "" });
+  const [allowCredentialFill, setAllowCredentialFill] = useState(false);
+
+  const authSignals = [
+    { icon: BriefcaseBusiness, label: "Mentor Sessions", value: "320 / week" },
+    { icon: Sparkles, label: "Live Projects", value: "Portfolio-ready" },
+    { icon: Compass, label: "Guided Flow", value: "Learn, track, improve" },
+  ];
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -32,20 +39,24 @@ const Auth = () => {
       name: params.get("name"),
       email: params.get("email"),
       role: params.get("role"),
+      avatar: params.get("avatar") || "",
+      oauth_provider: params.get("oauth_provider") || null,
       notification_email: true,
       notification_push: true,
       created_at: new Date().toISOString(),
     };
 
-    localStorage.setItem("lms_access_token", accessToken);
-    localStorage.setItem("lms_refresh_token", refreshToken);
-    localStorage.setItem("lumina_user", JSON.stringify(oauthUser));
+    completeOAuthLogin({
+      user: oauthUser,
+      accessToken,
+      refreshToken,
+    });
 
     if (redirectTo && oauthUser.role === "student") navigate(redirectTo, { replace: true });
     else if (oauthUser.role === "admin") navigate("/admin", { replace: true });
     else if (oauthUser.role === "mentor") navigate("/mentor", { replace: true });
     else navigate("/user", { replace: true });
-  }, [navigate]);
+  }, [completeOAuthLogin, navigate]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -142,18 +153,37 @@ const Auth = () => {
     <div className="auth">
       <div className="auth-container">
         <div className="auth-left">
-          <h2>Lumina LMS</h2>
-          <h1>Ignite your potential.</h1>
-          <p>Join the elite network of architects, engineers, and visionaries mastering the next generation.</p>
+          <div className="auth-left-orb auth-left-orb-one" />
+          <div className="auth-left-orb auth-left-orb-two" />
 
-          <div className="stats">
-            <strong>12,400+ Active Students</strong>
-            <span>Growing by 12% monthly</span>
+          <div className="auth-left-topline">
+            <span className="auth-brand-pill">Lumina LMS</span>
+            <span className="auth-brand-note">Future-ready learning network</span>
+          </div>
+
+          <div className="auth-left-copy">
+            <h1>Ignite your potential.</h1>
+            <p>Join the elite network of architects, engineers, and visionaries mastering the next generation.</p>
+          </div>
+
+          <div className="auth-left-signals">
+            {authSignals.map(({ icon, label, value }) => {
+              const SignalIcon = icon;
+              return (
+              <article key={label}>
+                <span className="auth-left-signal-icon"><SignalIcon size={18} /></span>
+                <div>
+                  <small>{label}</small>
+                  <strong>{value}</strong>
+                </div>
+              </article>
+              );
+            })}
           </div>
         </div>
 
         <div className="auth-right">
-          <div className="auth-card">
+          <div className={`auth-card ${resetMode ? "auth-card-reset" : ""}`}>
             {!resetMode && (
               <div className="auth-toggle">
                 <button className={isLogin ? "active" : ""} onClick={() => setIsLogin(true)}>Sign In</button>
@@ -178,9 +208,9 @@ const Auth = () => {
                     Google
                   </button>
 
-                  <button className="social-btn" type="button" onClick={() => startOAuth("linkedin")}>
-                    <img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" alt="" />
-                    LinkedIn
+                  <button className="social-btn" type="button" onClick={() => startOAuth("facebook")}>
+                    <img src="https://cdn-icons-png.flaticon.com/512/124/124010.png" alt="" />
+                    Facebook
                   </button>
                 </div>
 
@@ -189,7 +219,7 @@ const Auth = () => {
             )}
 
             {!resetMode ? (
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={handleSubmit} autoComplete="off">
                 {error && <p className="auth-error">{error}</p>}
                 {success && <p className="auth-success">{success}</p>}
 
@@ -212,13 +242,16 @@ const Auth = () => {
                     placeholder="student@example.com"
                     value={formData.email}
                     onChange={handleChange}
+                    onFocus={() => setAllowCredentialFill(true)}
+                    readOnly={!allowCredentialFill}
+                    autoComplete="off"
                     required
                   />
                 </div>
 
                 <div className="label-row">
                   <label>Password</label>
-                  {isLogin && <button type="button" className="forgot" onClick={() => setResetMode(true)}>Forgot?</button>}
+                  {isLogin && <button type="button" className="forgot" onClick={() => setResetMode(true)}>Forgot Password?</button>}
                 </div>
 
                 <div className="input">
@@ -229,6 +262,9 @@ const Auth = () => {
                     placeholder="********"
                     value={formData.password}
                     onChange={handleChange}
+                    onFocus={() => setAllowCredentialFill(true)}
+                    readOnly={!allowCredentialFill}
+                    autoComplete="new-password"
                     required
                   />
 
@@ -250,7 +286,7 @@ const Auth = () => {
                 </button>
               </form>
             ) : (
-              <form onSubmit={otpSent ? resetPassword : requestOtp}>
+              <form onSubmit={otpSent ? resetPassword : requestOtp} autoComplete="off">
                 {error && <p className="auth-error">{error}</p>}
                 {success && <p className="auth-success">{success}</p>}
 
@@ -261,6 +297,9 @@ const Auth = () => {
                     type="email"
                     value={resetData.email}
                     onChange={(e) => setResetData({ ...resetData, email: e.target.value })}
+                    onFocus={() => setAllowCredentialFill(true)}
+                    readOnly={!allowCredentialFill}
+                    autoComplete="off"
                     placeholder="student@example.com"
                     required
                   />
@@ -274,6 +313,9 @@ const Auth = () => {
                       <input
                         value={resetData.otp}
                         onChange={(e) => setResetData({ ...resetData, otp: e.target.value })}
+                        onFocus={() => setAllowCredentialFill(true)}
+                        readOnly={!allowCredentialFill}
+                        autoComplete="one-time-code"
                         placeholder="Enter 6 digit OTP"
                         required
                       />
@@ -286,6 +328,9 @@ const Auth = () => {
                         type="password"
                         value={resetData.newPassword}
                         onChange={(e) => setResetData({ ...resetData, newPassword: e.target.value })}
+                        onFocus={() => setAllowCredentialFill(true)}
+                        readOnly={!allowCredentialFill}
+                        autoComplete="new-password"
                         placeholder="New password"
                         required
                       />

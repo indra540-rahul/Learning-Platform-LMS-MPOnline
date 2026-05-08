@@ -34,14 +34,18 @@ OAUTH_PROVIDERS = {
     "scope": "openid email profile",
     "client_id": lambda: settings.GOOGLE_CLIENT_ID,
     "client_secret": lambda: settings.GOOGLE_CLIENT_SECRET,
+    "token_method": "post",
+    "profile_mode": "openid",
   },
-  "linkedin": {
-    "auth_url": "https://www.linkedin.com/oauth/v2/authorization",
-    "token_url": "https://www.linkedin.com/oauth/v2/accessToken",
-    "userinfo_url": "https://api.linkedin.com/v2/userinfo",
-    "scope": "openid profile email",
-    "client_id": lambda: settings.LINKEDIN_CLIENT_ID,
-    "client_secret": lambda: settings.LINKEDIN_CLIENT_SECRET,
+  "facebook": {
+    "auth_url": "https://www.facebook.com/v22.0/dialog/oauth",
+    "token_url": "https://graph.facebook.com/v22.0/oauth/access_token",
+    "userinfo_url": "https://graph.facebook.com/v22.0/me",
+    "scope": "email,public_profile",
+    "client_id": lambda: settings.FACEBOOK_CLIENT_ID,
+    "client_secret": lambda: settings.FACEBOOK_CLIENT_SECRET,
+    "token_method": "get",
+    "profile_mode": "graph",
   },
 }
 
@@ -63,6 +67,8 @@ def redirect_with_tokens(user: User):
     "name": user.name,
     "email": user.email,
     "role": user.role,
+    "avatar": user.avatar or "",
+    "oauth_provider": user.oauth_provider or "",
   })
   return RedirectResponse(f"{settings.FRONTEND_URL}/auth?{params}")
 
@@ -90,9 +96,13 @@ def redirect_uri(provider: str) -> str:
   return f"{settings.BACKEND_URL}/api/auth/oauth/{provider}/callback"
 
 
-def get_or_create_oauth_user(db: Session, email: str, name: str) -> User:
+def get_or_create_oauth_user(db: Session, email: str, name: str, provider: str) -> User:
   user = db.query(User).filter(User.email == email).first()
   if user:
+    if not user.oauth_provider:
+      user.oauth_provider = provider
+      db.commit()
+      db.refresh(user)
     return user
 
   user = User(
@@ -100,6 +110,7 @@ def get_or_create_oauth_user(db: Session, email: str, name: str) -> User:
     email=email,
     password=hash_password(token_urlsafe(24)),
     role="student",
+    oauth_provider=provider,
   )
   db.add(user)
   db.commit()
@@ -129,7 +140,7 @@ def register(payload: UserCreate, background_tasks: BackgroundTasks, db: Session
     name=payload.name,
     email=payload.email,
     password=hash_password(payload.password),
-    role=payload.role,
+    role="student",
   )
   db.add(user)
   db.commit()
@@ -143,6 +154,11 @@ def register(payload: UserCreate, background_tasks: BackgroundTasks, db: Session
 @router.post("/login", response_model=TokenResponse)
 def login(payload: LoginRequest, db: Session = Depends(get_db)):
   user = db.query(User).filter(User.email == payload.email).first()
+  if user and user.oauth_provider:
+    raise HTTPException(
+      status_code=status.HTTP_400_BAD_REQUEST,
+      detail=f"This account uses {user.oauth_provider.title()} sign-in. Please continue with {user.oauth_provider.title()}.",
+    )
   if not user or not verify_password(user.email, payload.password, user.password):
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
   return token_response(user)
@@ -187,25 +203,42 @@ async def oauth_callback(
   validate_oauth_state(state, provider)
 
   async with httpx.AsyncClient(timeout=15) as client:
-    token_response_data = await client.post(
-      provider_config["token_url"],
-      data={
-        "grant_type": "authorization_code",
-        "code": code,
-        "redirect_uri": redirect_uri(provider),
-        "client_id": provider_config["client_id"](),
-        "client_secret": provider_config["client_secret"](),
-      },
-      headers={"Accept": "application/json"},
-    )
+    token_payload = {
+      "grant_type": "authorization_code",
+      "code": code,
+      "redirect_uri": redirect_uri(provider),
+      "client_id": provider_config["client_id"](),
+      "client_secret": provider_config["client_secret"](),
+    }
+    if provider_config.get("token_method") == "get":
+      token_response_data = await client.get(
+        provider_config["token_url"],
+        params=token_payload,
+        headers={"Accept": "application/json"},
+      )
+    else:
+      token_response_data = await client.post(
+        provider_config["token_url"],
+        data=token_payload,
+        headers={"Accept": "application/json"},
+      )
     if token_response_data.status_code >= 400:
       raise HTTPException(status_code=400, detail="OAuth token exchange failed")
 
     access_token = token_response_data.json().get("access_token")
-    userinfo_response = await client.get(
-      provider_config["userinfo_url"],
-      headers={"Authorization": f"Bearer {access_token}"},
-    )
+    if provider_config.get("profile_mode") == "graph":
+      userinfo_response = await client.get(
+        provider_config["userinfo_url"],
+        params={
+          "fields": "id,name,email",
+          "access_token": access_token,
+        },
+      )
+    else:
+      userinfo_response = await client.get(
+        provider_config["userinfo_url"],
+        headers={"Authorization": f"Bearer {access_token}"},
+      )
     if userinfo_response.status_code >= 400:
       raise HTTPException(status_code=400, detail="OAuth profile fetch failed")
 
@@ -215,13 +248,15 @@ async def oauth_callback(
   if not email:
     raise HTTPException(status_code=400, detail="OAuth provider did not return an email")
 
-  user = get_or_create_oauth_user(db, email, name)
+  user = get_or_create_oauth_user(db, email, name, provider)
   return redirect_with_tokens(user)
 
 
 @router.post("/forgot-password", response_model=MessageResponse)
 def forgot_password(payload: ForgotPasswordRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
   user = db.query(User).filter(User.email == payload.email).first()
+  if user and user.oauth_provider:
+    return {"message": f"This account uses {user.oauth_provider.title()} sign-in. Please continue with {user.oauth_provider.title()} instead of resetting a password."}
   if user:
     otp = create_reset_otp(db, payload.email)
     background_tasks.add_task(send_password_reset_otp, payload.email, otp)
@@ -231,6 +266,8 @@ def forgot_password(payload: ForgotPasswordRequest, background_tasks: Background
 @router.post("/resend-otp", response_model=MessageResponse)
 def resend_otp(payload: ForgotPasswordRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
   user = db.query(User).filter(User.email == payload.email).first()
+  if user and user.oauth_provider:
+    return {"message": f"This account uses {user.oauth_provider.title()} sign-in. Please continue with {user.oauth_provider.title()} instead of requesting an OTP."}
   if user:
     otp = create_reset_otp(db, payload.email)
     background_tasks.add_task(send_password_reset_otp, payload.email, otp)
@@ -242,6 +279,11 @@ def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db))
   user = db.query(User).filter(User.email == payload.email).first()
   if not user:
     raise HTTPException(status_code=400, detail="Invalid OTP or email")
+  if user.oauth_provider:
+    raise HTTPException(
+      status_code=400,
+      detail=f"This account uses {user.oauth_provider.title()} sign-in. Password reset is not available for this account.",
+    )
 
   reset_record = (
     db.query(PasswordResetOTP)

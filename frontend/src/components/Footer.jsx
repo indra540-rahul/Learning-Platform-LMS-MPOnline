@@ -1,9 +1,35 @@
-import React from "react";
+import React, { useState } from "react";
 import "./Footer.css";
 import { Send } from "lucide-react";
 import { FaLinkedinIn, FaXTwitter } from "react-icons/fa6";
+import { api } from "../services/api";
 
 const Footer = () => {
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterStatus, setNewsletterStatus] = useState({ type: "", message: "" });
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleNewsletterSubmit = async (event) => {
+    event.preventDefault();
+    const email = newsletterEmail.trim();
+
+    if (!email) {
+      setNewsletterStatus({ type: "error", message: "Please enter your email address." });
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const response = await api.subscribeNewsletter({ email });
+      setNewsletterStatus({ type: "success", message: response.message || "Subscribed successfully." });
+      setNewsletterEmail("");
+    } catch (error) {
+      setNewsletterStatus({ type: "error", message: error.message || "Unable to subscribe right now." });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <footer className="footer">
       <div className="footer-container">
@@ -16,9 +42,9 @@ const Footer = () => {
             and corporate-grade reliability.
           </p>
 
-         <div className="social-icons">
-  <a href="#" className="icon"><FaLinkedinIn /></a>
-  <a href="#" className="icon"><FaXTwitter /></a>
+        <div className="social-icons">
+  <a href="https://www.linkedin.com" className="icon"><FaLinkedinIn /></a>
+  <a href="https://twitter.com" className="icon"><FaXTwitter /></a>
 </div>
         </div>
 
@@ -51,12 +77,23 @@ const Footer = () => {
             Stay updated with the latest learning tracks and features.
           </p>
 
-          <div className="newsletter-box">
-            <input type="email" placeholder="Email address" />
-            <button>
-              <Send size={16} />
-            </button>
-          </div>
+          <form className="newsletter-form" onSubmit={handleNewsletterSubmit}>
+            <div className="newsletter-box">
+              <input
+                type="email"
+                placeholder="Email address"
+                value={newsletterEmail}
+                onChange={(event) => setNewsletterEmail(event.target.value)}
+                disabled={submitting}
+              />
+              <button type="submit" disabled={submitting} aria-label="Subscribe to newsletter">
+                <Send size={16} />
+              </button>
+            </div>
+            {newsletterStatus.message && (
+              <p className={`newsletter-status ${newsletterStatus.type}`}>{newsletterStatus.message}</p>
+            )}
+          </form>
         </div>
 
       </div>

@@ -88,8 +88,8 @@ const About = () => {
         <div className="science-left">
           <img src="https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=200" alt="Technology visual" />
           <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=200" alt="AI concept" />
-          <img src="https://images.unsplash.com/photo-1581090700227-4c4b7c3a3f7a?w=200" alt="Research lab" />
-          <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=200" alt="Computer chip" />
+          <img src="https://images.unsplash.com/photo-1674027444485-cec3da58eef4?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8YWl8ZW58MHx8MHx8fDA%3D" alt="Research lab" />
+          <img src="https://plus.unsplash.com/premium_photo-1682756540097-6a887bbcf9b0?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fGFpfGVufDB8fDB8fHww" alt="Computer chip" />
         </div>
 
         <div className="science-right">
@@ -120,26 +120,26 @@ const About = () => {
 
         <div className="team-grid">
           <div className="team-card">
-            <img src="https://i.pravatar.cc/300?img=5" alt="Dr. Sarah Chen" />
-            <h4>Dr. Sarah Chen</h4>
+            <img src="https://i.pravatar.cc/300?img=5" alt="Dr. Aarya Chen" />
+            <h4>Dr. Aarya Chen</h4>
             <span>Chief Cognitive Architect</span>
           </div>
 
           <div className="team-card">
-            <img src="https://i.pravatar.cc/300?img=12" alt="Jameson Reed" />
-            <h4>Jameson Reed</h4>
+            <img src="https://i.pravatar.cc/300?img=12" alt="Rohan Reed" />
+            <h4>Rohan Reed</h4>
             <span>VP of Engineering</span>
           </div>
 
           <div className="team-card">
-            <img src="https://i.pravatar.cc/300?img=20" alt="Elena Vance" />
-            <h4>Elena Vance</h4>
+            <img src="https://i.pravatar.cc/300?img=20" alt="Elena Kapoor" />
+            <h4>Elena Kapoor</h4>
             <span>Director of Product Design</span>
           </div>
 
           <div className="team-card">
-            <img src="https://i.pravatar.cc/300?img=30" alt="Marcus Thorne" />
-            <h4>Marcus Thorne</h4>
+            <img src="https://i.pravatar.cc/300?img=30" alt="Marcus Iyer" />
+            <h4>Marcus Iyer</h4>
             <span>Head of Learning Science</span>
           </div>
         </div>
@@ -155,8 +155,14 @@ const About = () => {
           </p>
 
           <div className="cta-buttons">
-            <button className="primary-btn">Explore Platform</button>
-            <button className="secondary-btn">Book a Demo</button>
+            <a
+              className="primary-btn"
+              href="https://github.com/indra540-rahul"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Documentation on GitHub
+            </a>
           </div>
         </div>
       </section>

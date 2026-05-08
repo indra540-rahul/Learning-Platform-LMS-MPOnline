@@ -12,7 +12,7 @@ def seed_database(db: Session):
 
   users = [
     User(name="Admin User", email="admin@example.com", password=hash_password("admin123"), role="admin"),
-    User(name="Mentor User", email="mentor@example.com", password=hash_password("mentor123"), role="mentor"),
+    User(name="Mentor User", email="mentor@example.com", password=hash_password("mentor123"), role="mentor", mentor_speciality="React, frontend architecture"),
     User(name="Student User", email="student@example.com", password=hash_password("student123"), role="student"),
     User(name="Ananya Sharma", email="ananya@example.com", password=hash_password("student123"), role="student"),
     User(name="Rahul Mehta", email="rahul@example.com", password=hash_password("student123"), role="student"),
@@ -21,6 +21,7 @@ def seed_database(db: Session):
   db.flush()
 
   admin, mentor, student = users[0], users[1], users[2]
+  student.assigned_mentor_id = mentor.id
   due_base = datetime.utcnow() + timedelta(days=2)
   tasks = [
     Task(
@@ -28,6 +29,10 @@ def seed_database(db: Session):
       description="Complete nested route practice and dashboard navigation.",
       status="To Do",
       priority="High",
+      progress=0,
+      difficulty="Hard",
+      estimated_minutes=180,
+      time_spent_minutes=20,
       tags="react,frontend",
       assigned_to=student.id,
       created_by=mentor.id,
@@ -38,6 +43,10 @@ def seed_database(db: Session):
       description="Summarize 1NF, 2NF, 3NF and BCNF with examples.",
       status="In Progress",
       priority="Medium",
+      progress=55,
+      difficulty="Medium",
+      estimated_minutes=150,
+      time_spent_minutes=70,
       tags="database,assignment",
       assigned_to=student.id,
       created_by=mentor.id,
@@ -48,6 +57,10 @@ def seed_database(db: Session):
       description="Mentor review for student study plan adherence.",
       status="Review",
       priority="Critical",
+      progress=85,
+      difficulty="Medium",
+      estimated_minutes=90,
+      time_spent_minutes=55,
       tags="review,mentor",
       assigned_to=mentor.id,
       created_by=admin.id,
@@ -58,6 +71,10 @@ def seed_database(db: Session):
       description="Write a weekly learning report and submit it for feedback.",
       status="Done",
       priority="Low",
+      progress=100,
+      difficulty="Easy",
+      estimated_minutes=60,
+      time_spent_minutes=60,
       tags="report,markdown",
       assigned_to=student.id,
       created_by=mentor.id,

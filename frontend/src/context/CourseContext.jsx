@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { courseCatalog } from "../data/courseCatalog";
+import { api } from "../services/api";
 import { useAuth } from "../hooks/useAuth";
 import { CourseContext } from "./course-context";
 
 const CART_KEY = "lumina_course_cart_v1";
-const ENROLLMENTS_KEY = "lumina_course_enrollments_v1";
 
 const readJson = (key, fallback) => {
   try {
@@ -15,34 +14,79 @@ const readJson = (key, fallback) => {
   }
 };
 
-const resolveUserKey = (user) => user?.email || (user?.id ? String(user.id) : "");
-
 export const CourseProvider = ({ children }) => {
   const { user } = useAuth();
+  const [courses, setCourses] = useState([]);
   const [cartIds, setCartIds] = useState(() => readJson(CART_KEY, []));
-  const [enrollmentsByUser, setEnrollmentsByUser] = useState(() => readJson(ENROLLMENTS_KEY, {}));
+  const [enrollments, setEnrollments] = useState([]);
+  const isStudent = user?.role === "student";
 
   useEffect(() => {
     localStorage.setItem(CART_KEY, JSON.stringify(cartIds));
   }, [cartIds]);
 
   useEffect(() => {
-    localStorage.setItem(ENROLLMENTS_KEY, JSON.stringify(enrollmentsByUser));
-  }, [enrollmentsByUser]);
+    let mounted = true;
+    api.courses()
+      .then((data) => {
+        if (mounted) {
+          setCourses(data);
+        }
+      })
+      .catch(() => {
+        if (mounted) {
+          setCourses([]);
+        }
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+
+    if (!isStudent) return () => {
+      mounted = false;
+    };
+
+    api.myEnrollments()
+      .then((data) => {
+        if (mounted) {
+          setEnrollments(data);
+          setCartIds((current) => current.filter((courseId) => !data.some((entry) => entry.course_id === courseId)));
+        }
+      })
+      .catch(() => {
+        if (mounted) {
+          setEnrollments([]);
+        }
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [isStudent]);
 
   const cartCourses = useMemo(
-    () => cartIds.map((courseId) => courseCatalog.find((course) => course.id === courseId)).filter(Boolean),
-    [cartIds],
+    () => cartIds.map((courseId) => courses.find((course) => course.id === courseId)).filter(Boolean),
+    [cartIds, courses],
   );
 
   const enrolledCourseIds = useMemo(() => {
-    const key = resolveUserKey(user);
-    return key ? enrollmentsByUser[key] || [] : [];
-  }, [enrollmentsByUser, user]);
+    return (isStudent ? enrollments : []).map((entry) => entry.course_id);
+  }, [enrollments, isStudent]);
 
   const enrolledCourses = useMemo(
-    () => enrolledCourseIds.map((courseId) => courseCatalog.find((course) => course.id === courseId)).filter(Boolean),
-    [enrolledCourseIds],
+    () => (isStudent ? enrollments : []).map((entry) => {
+      const course = courses.find((item) => item.id === entry.course_id);
+      return course ? {
+        ...course,
+        purchasedAt: entry.purchased_at,
+        razorpayPaymentId: entry.razorpay_payment_id,
+      } : null;
+    }).filter(Boolean),
+    [courses, enrollments, isStudent],
   );
 
   const addToCart = (courseId) => {
@@ -58,36 +102,17 @@ export const CourseProvider = ({ children }) => {
   };
 
   const isInCart = (courseId) => cartIds.includes(courseId);
-  const isEnrolled = (courseId, scopedUser = user) => {
-    const key = resolveUserKey(scopedUser);
-    return key ? (enrollmentsByUser[key] || []).includes(courseId) : false;
-  };
+  const isEnrolled = (courseId) => enrolledCourseIds.includes(courseId);
 
-  const completePurchase = () => {
-    const userKey = resolveUserKey(user);
-
-    if (!userKey) {
-      throw new Error("Please create your student account to complete payment.");
+  const refreshEnrollments = async () => {
+    if (!isStudent) {
+      setEnrollments([]);
+      return [];
     }
-
-    if (user?.role !== "student") {
-      throw new Error("Course enrollment is available for student accounts only.");
-    }
-
-    if (!cartIds.length) {
-      throw new Error("Your cart is empty.");
-    }
-
-    setEnrollmentsByUser((current) => {
-      const existing = current[userKey] || [];
-      return {
-        ...current,
-        [userKey]: [...new Set([...existing, ...cartIds])],
-      };
-    });
-
-    setCartIds([]);
-    return cartIds;
+    const data = await api.myEnrollments();
+    setEnrollments(data);
+    setCartIds((current) => current.filter((courseId) => !data.some((entry) => entry.course_id === courseId)));
+    return data;
   };
 
   const subtotal = cartCourses.reduce((total, course) => total + course.price, 0);
@@ -95,7 +120,7 @@ export const CourseProvider = ({ children }) => {
   return (
     <CourseContext.Provider
       value={{
-        courses: courseCatalog,
+        courses,
         cartIds,
         cartCourses,
         cartCount: cartCourses.length,
@@ -106,7 +131,7 @@ export const CourseProvider = ({ children }) => {
         clearCart,
         isInCart,
         isEnrolled,
-        completePurchase,
+        refreshEnrollments,
       }}
     >
       {children}

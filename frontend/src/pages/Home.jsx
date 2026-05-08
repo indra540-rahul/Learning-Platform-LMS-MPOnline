@@ -26,7 +26,7 @@ const Home = () => {
             <button className="primary-btn" onClick={() => navigate("/courses")}>
               Explore Curriculum <ArrowRight size={16} />
             </button>
-            <button className="secondary-btn" onClick={() => navigate("/about")}>Watch Demo</button>
+            {/* <button className="secondary-btn" onClick={() => navigate("/about")}>Watch Demo</button> */}
           </div>
 
           <div className="users">

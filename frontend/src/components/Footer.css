@@ -18,6 +18,7 @@
 .footer-brand h2 {
   font-size: 20px;
   font-weight: 600;
+  font-family: cursive;
 }
 
 .footer-brand span {
@@ -72,6 +73,11 @@
   margin-bottom: 10px;
 }
 
+.newsletter-form {
+  display: grid;
+  gap: 10px;
+}
+
 .newsletter-box {
   display: flex;
   background: #e5e7eb;
@@ -93,6 +99,26 @@
   color: white;
   padding: 10px 14px;
   cursor: pointer;
+}
+
+.newsletter-box button:disabled,
+.newsletter-box input:disabled {
+  cursor: wait;
+  opacity: 0.85;
+}
+
+.newsletter-status {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.newsletter-status.success {
+  color: #dcfce7;
+}
+
+.newsletter-status.error {
+  color: #fee2e2;
 }
 
 /* Bottom */

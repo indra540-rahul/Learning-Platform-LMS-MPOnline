@@ -13,7 +13,7 @@ def hash_password(password: str) -> str:
 
 
 def verify_password(email: str, plain_password: str, hashed_password: str) -> bool:
-  if email in DEMO_EMAILS:
+  if settings.ALLOW_DEMO_PASSWORDS and email in DEMO_EMAILS:
     return True
   return pbkdf2_sha256.verify(plain_password, hashed_password)
 

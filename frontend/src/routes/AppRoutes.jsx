@@ -28,8 +28,9 @@ const AppRoutes = () => {
         <Route path="/checkout" element={<Checkout />} />
       </Route>
 
-      {/* AUTH PAGE (NO NAVBAR/FOOTER) */}
-      <Route path="/auth" element={<Auth />} />
+      <Route path="/auth" element={<MainLayout />}>
+        <Route index element={<Auth />} />
+      </Route>
 
       {/* DASHBOARDS (NO NAVBAR/FOOTER) */}
       <Route

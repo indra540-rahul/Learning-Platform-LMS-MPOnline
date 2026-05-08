@@ -11,7 +11,6 @@ import {
   Users,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { courseCategories } from "../data/courseCatalog";
 import { useAuth } from "../hooks/useAuth";
 import { useCourses } from "../hooks/useCourses";
 import "./Courses.css";
@@ -36,6 +35,9 @@ const Courses = () => {
   const { courses, addToCart, isInCart, isEnrolled, cartCount } = useCourses();
   const [activeCategory, setActiveCategory] = useState("All");
   const [search, setSearch] = useState("");
+  const [visibleCount, setVisibleCount] = useState(6);
+  const [loadStep, setLoadStep] = useState(6);
+  const courseCategories = useMemo(() => ["All", ...new Set(courses.map((course) => course.category))], [courses]);
 
   const filteredCourses = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -48,6 +50,11 @@ const Courses = () => {
       return categoryMatch && termMatch;
     });
   }, [activeCategory, courses, search]);
+
+  const visibleCourses = useMemo(
+    () => filteredCourses.slice(0, visibleCount),
+    [filteredCourses, visibleCount],
+  );
 
   const featured = courses.slice(0, 3);
 
@@ -97,7 +104,10 @@ const Courses = () => {
             <Filter size={16} />
             <input
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                setVisibleCount(loadStep);
+              }}
               placeholder="Search titles, mentors, categories..."
             />
           </label>
@@ -109,15 +119,39 @@ const Courses = () => {
               key={category}
               type="button"
               className={activeCategory === category ? "active" : ""}
-              onClick={() => setActiveCategory(category)}
+              onClick={() => {
+                setActiveCategory(category);
+                setVisibleCount(loadStep);
+              }}
             >
               {category}
             </button>
           ))}
         </div>
 
+        <div className="catalog-results-bar">
+          <p>
+            Showing <strong>{visibleCourses.length}</strong> of <strong>{filteredCourses.length}</strong> courses
+          </p>
+          <label className="catalog-view-select">
+            <span>See more by</span>
+            <select
+              value={String(loadStep)}
+              onChange={(event) => {
+                const nextStep = Number(event.target.value) || 6;
+                setLoadStep(nextStep);
+                setVisibleCount(nextStep);
+              }}
+            >
+              <option value="6">6 courses</option>
+              <option value="9">9 courses</option>
+              <option value="12">12 courses</option>
+            </select>
+          </label>
+        </div>
+
         <Motion.div className="courses-grid" initial="hidden" animate="show" variants={stagger}>
-          {filteredCourses.map((course) => {
+          {visibleCourses.map((course) => {
             const enrolled = isEnrolled(course.id);
             const inCart = isInCart(course.id);
 
@@ -177,6 +211,18 @@ const Courses = () => {
             );
           })}
         </Motion.div>
+
+        {!!filteredCourses.length && visibleCourses.length < filteredCourses.length && (
+          <div className="catalog-load-more">
+            <button
+              type="button"
+              className="catalog-secondary"
+              onClick={() => setVisibleCount((current) => Math.min(current + loadStep, filteredCourses.length))}
+            >
+              See More Courses
+            </button>
+          </div>
+        )}
       </section>
     </div>
   );

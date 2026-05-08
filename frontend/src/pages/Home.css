@@ -1,15 +1,21 @@
 .home {
-  padding: 40px;
+  padding: 0 40px 40px;
   font-family: "Inter", sans-serif;
 }
 
 /* HERO */
 .hero {
-  padding: 50px;
+  margin-top: 90px;
+  border-radius: 30px;
+  margin-left: 15px;
+  margin-right: 15px;
+  padding: 52px 50px 50px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 40px;
+  background: linear-gradient(135deg, #f9f5f9 0%, #d5e2fb 45%, #c0e4ff 100%);
+  /* background-image: linear-gradient(to right top, #ffcce9, #ffb0f1, #eaa7fe, #c6a7fc, #9a9ae1, #8aa7ec, #9ac9fe, #8ccffc, #67d6fe, #68e4fd, #46eefa, #5ffbf1); */
 }
 
 .hero-left {
@@ -19,10 +25,11 @@
 .badge {
   background: #eef2ff;
   padding: 6px 12px;
+  border: 1px solid #6e8bff;
   border-radius: 20px;
   font-size: 12px;
   font-weight: bold;
-  color: #03a7ff;
+  color: #243aff;
 }
 
 .hero-left h1 {
@@ -40,10 +47,11 @@
 }
 
 .hero-left p {
-  color: #6b7280;
+  color: #212121;
   margin-left: 20px;
   margin-bottom: 20px;
   line-height: 25px;
+  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
 }
 
 .hero-buttons {
