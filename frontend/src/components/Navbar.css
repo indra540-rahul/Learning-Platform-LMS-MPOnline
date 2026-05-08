@@ -177,7 +177,7 @@ body {
   place-items: center;
   cursor: pointer;
   transition: 0.2s ease;
-  overflow: hidden; 
+  overflow: visible;
 }
 
 .cart-btn::before {
@@ -219,6 +219,7 @@ body {
   font-weight: 700;
   display: grid;
   place-items: center;
+  z-index: 2;
 }
 
 .nav-user-shell {
